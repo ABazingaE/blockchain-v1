@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"crypto/sha256"
 	"time"
 )
 
@@ -56,30 +54,35 @@ func NewBlock(data string, prevHash []byte) *Block {
 		Data:       []byte(data),
 		Hash:       nil,
 	}
-	b.setHash()
+
+	//计算hash
+	// b.setHash()
+	pow := NewProofOfWork(&b)
+	hash, nonce := pow.Run()
+	b.Hash = hash
+	b.Nonce = nonce
 	return &b
 }
 
 /*
 	计算Hash
 */
-func (b *Block) setHash() {
+// func (b *Block) setHash() {
 
-	//data是block各个字段的拼接
-
-	temp := [][]byte{
-		uintToByte(b.Version),
-		b.PrevHash,
-		b.MerkleRoot,
-		uintToByte(b.TimeStamp),
-		uintToByte(b.Bits),
-		uintToByte(b.Nonce),
-		b.Hash,
-		b.Data,
-	}
-	//注意使用bytes.join将二维切片转化为一维切片
-	data := bytes.Join(temp, []byte{})
-	hash := sha256.Sum256(data)
-	//此处或许是将数组转化为切片？
-	b.Hash = hash[:]
-}
+// 	//data是block各个字段的拼接
+// 	temp := [][]byte{
+// 		uintToByte(b.Version),
+// 		b.PrevHash,
+// 		b.MerkleRoot,
+// 		uintToByte(b.TimeStamp),
+// 		uintToByte(b.Bits),
+// 		uintToByte(b.Nonce),
+// 		b.Hash,
+// 		b.Data,
+// 	}
+// 	//注意使用bytes.join将二维切片转化为一维切片
+// 	data := bytes.Join(temp, []byte{})
+// 	hash := sha256.Sum256(data)
+// 	//此处或许是将数组转化为切片？
+// 	b.Hash = hash[:]
+// }
