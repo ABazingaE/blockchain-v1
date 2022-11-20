@@ -20,6 +20,10 @@ func main() {
 		fmt.Printf("Nonce: %d\n", block.Nonce)
 		fmt.Printf("Hash: %x\n", block.Hash)
 		fmt.Printf("Data: %s\n", string(block.Data))
+
+		pow := NewProofOfWork(block)
+		fmt.Printf("is valid: %v\n", pow.IsValid())
+
 	}
 
 }

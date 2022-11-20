@@ -82,10 +82,22 @@ func (pow *ProofOfWork) PrepareData(nonce uint64) []byte {
 		uintToByte(b.TimeStamp),
 		uintToByte(b.Bits),
 		uintToByte(nonce),
-		b.Hash,
+		//b.Hash,
 		b.Data,
 	}
 	//注意使用bytes.join将二维切片转化为一维切片
 	data := bytes.Join(temp, []byte{})
 	return data
+}
+
+/**
+ * @description: 校验有效性
+ * @return {*}
+ */
+func (pow *ProofOfWork) IsValid() bool {
+	data := pow.PrepareData(pow.block.Nonce)
+	hash := sha256.Sum256(data)
+	tempInt := new(big.Int)
+	tempInt.SetBytes(hash[:])
+	return tempInt.Cmp(pow.target) == -1
 }
