@@ -1,6 +1,10 @@
 package main
 
-import "github.com/boltdb/bolt"
+import (
+	"errors"
+
+	"github.com/boltdb/bolt"
+)
 
 /*
 	定义区块链结构（数组模拟）
@@ -15,7 +19,6 @@ type BlockChain struct {
 
 /*
 	创建区块链
-	1.查找是否有数据库，若有则填充blockchain返回，若无则新建数据库，且添加创世区块并返回
 */
 //创世语
 const genesisInfo = "Hello,Web3!"
@@ -23,22 +26,15 @@ const blockchainDbFile = "blockchain"
 const blockBucket = "blockBucket"
 const lastblockKey = "lastBlockKey"
 
-func NewBlockChain() (*BlockChain, error) {
-
-	// genesisBlock := NewBlock(genesisInfo, nil)
-	// bc := BlockChain{
-	// 	Blocks: []*Block{genesisBlock},
-	// }
-	// return &bc
-
-	var lastHash []byte
-
+func CreateBlockChain() error {
 	db, err := bolt.Open(blockchainDbFile, 0600, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
+	defer db.Close()
 
-	db.Update(func(tx *bolt.Tx) error {
+	//start to create
+	err = db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(blockBucket))
 
 		//若没有bucket，则创建，添加创世块
@@ -53,8 +49,37 @@ func NewBlockChain() (*BlockChain, error) {
 			genisisBlock := NewBlock(genesisInfo, nil)
 
 			//put into the bucket,key is the hash of the block, value is the block
-			bucket.Put(genisisBlock.Hash, genisisBlock.serialize)
+			bucket.Put(genisisBlock.Hash, genisisBlock.Serialize())
 			bucket.Put([]byte(lastblockKey), genisisBlock.Hash)
+		}
+
+		return nil
+
+	})
+
+	return err
+
+}
+
+/**
+ * @description: 获取已有的blockchain实例
+ * @return {*}
+ */
+func GetBlockChainInstance() (*BlockChain, error) {
+
+	var lastHash []byte
+
+	db, err := bolt.Open(blockchainDbFile, 0400, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(blockBucket))
+
+		//若没有bucket，则创建，添加创世块
+		if bucket == nil {
+			return errors.New("bucket 为空")
 		}
 
 		lastHash = bucket.Get([]byte(lastblockKey))
