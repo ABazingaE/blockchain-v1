@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 func main() {
 	// bc := NewBlockChain()
 
@@ -23,5 +25,16 @@ func main() {
 	// }
 
 	CreateBlockChain()
+
+	bc, err := GetBlockChainInstance()
+
+	if err != nil {
+		fmt.Printf("error:", err)
+	}
+	defer bc.db.Close()
+
+	bc.AddBlock("test add function")
+
+	bc.AddBlock("have a cold today")
 
 }

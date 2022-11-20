@@ -100,10 +100,31 @@ func GetBlockChainInstance() (*BlockChain, error) {
 /*
 	添加区块
 */
-func (bc *BlockChain) AddBlock(data string) {
-	//拿到最后一个区块的哈希值作为新区块的前置哈希
-	// lastBlock := bc.Blocks[len(bc.Blocks)-1]
-	// prevHash := lastBlock.Hash
-	// newBlock := NewBlock(data, prevHash)
-	// bc.Blocks = append(bc.Blocks, newBlock)
+func (bc *BlockChain) AddBlock(data string) error {
+	lastblockHash := bc.tail
+	db := bc.db
+
+	err := db.Update(func(tx *bolt.Tx) error {
+
+		bucket := tx.Bucket([]byte(blockBucket))
+
+		if bucket == nil {
+			return errors.New("bucket must not be empty when adding a block")
+		}
+
+		//1. create new block
+		block := NewBlock(data, lastblockHash)
+
+		//2.insert into db
+		bucket.Put(block.Hash, block.Serialize())
+		bucket.Put([]byte(lastblockKey), block.Hash)
+
+		//3.update last hash in memory
+		bc.tail = block.Hash
+
+		return nil
+
+	})
+
+	return err
 }
