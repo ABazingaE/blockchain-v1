@@ -1,6 +1,9 @@
 package main
 
 import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
 	"time"
 )
 
@@ -64,25 +67,34 @@ func NewBlock(data string, prevHash []byte) *Block {
 	return &b
 }
 
-/*
-	计算Hash
-*/
-// func (b *Block) setHash() {
+func (b *Block) Serialize() []byte {
+	//用于指定容器，告诉编码器往哪里放
+	var buffer bytes.Buffer
 
-// 	//data是block各个字段的拼接
-// 	temp := [][]byte{
-// 		uintToByte(b.Version),
-// 		b.PrevHash,
-// 		b.MerkleRoot,
-// 		uintToByte(b.TimeStamp),
-// 		uintToByte(b.Bits),
-// 		uintToByte(b.Nonce),
-// 		b.Hash,
-// 		b.Data,
-// 	}
-// 	//注意使用bytes.join将二维切片转化为一维切片
-// 	data := bytes.Join(temp, []byte{})
-// 	hash := sha256.Sum256(data)
-// 	//此处或许是将数组转化为切片？
-// 	b.Hash = hash[:]
-// }
+	//create encoder
+	encoder := gob.NewEncoder(&buffer)
+
+	err := encoder.Encode(b)
+
+	if err != nil {
+		fmt.Printf("encode error:", err)
+		return nil
+	}
+
+	return buffer.Bytes()
+}
+
+func Deserialize(src []byte) *Block {
+	var block Block
+
+	decoder := gob.NewDecoder(bytes.NewReader(src))
+
+	err := decoder.Decode(&block)
+
+	if err != nil {
+		fmt.Printf("decode error:", err)
+		return nil
+	}
+
+	return &block
+}

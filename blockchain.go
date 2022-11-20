@@ -102,8 +102,8 @@ func GetBlockChainInstance() (*BlockChain, error) {
 */
 func (bc *BlockChain) AddBlock(data string) {
 	//拿到最后一个区块的哈希值作为新区块的前置哈希
-	lastBlock := bc.Blocks[len(bc.Blocks)-1]
-	prevHash := lastBlock.Hash
-	newBlock := NewBlock(data, prevHash)
-	bc.Blocks = append(bc.Blocks, newBlock)
+	// lastBlock := bc.Blocks[len(bc.Blocks)-1]
+	// prevHash := lastBlock.Hash
+	// newBlock := NewBlock(data, prevHash)
+	// bc.Blocks = append(bc.Blocks, newBlock)
 }
