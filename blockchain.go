@@ -128,3 +128,33 @@ func (bc *BlockChain) AddBlock(data string) error {
 
 	return err
 }
+
+//++++++++++++++++++++++迭代器相关+++++++++++++++++++++++++++
+type Iterator struct {
+	db          *bolt.DB
+	currentHash []byte
+}
+
+func (bc *BlockChain) NewIterator() *Iterator {
+	it := Iterator{
+		db:          bc.db,
+		currentHash: bc.tail,
+	}
+	return &it
+}
+
+func (it *Iterator) Next() *Block {
+	db := it.db
+	var block *Block
+	db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(blockBucket))
+		if bucket == nil {
+			return errors.New("找不到Bucket")
+		}
+		data := bucket.Get(it.currentHash)
+		block = Deserialize(data)
+		return nil
+	})
+	it.currentHash = block.PrevHash
+	return block
+}
