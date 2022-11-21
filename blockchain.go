@@ -31,7 +31,7 @@ func CreateBlockChain() error {
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	//defer db.Close()
 
 	//start to create
 	err = db.Update(func(tx *bolt.Tx) error {
@@ -74,10 +74,9 @@ func GetBlockChainInstance() (*BlockChain, error) {
 		return nil, err
 	}
 
-	db.View(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(blockBucket))
 
-		//若没有bucket，则创建，添加创世块
 		if bucket == nil {
 			return errors.New("bucket 为空")
 		}
@@ -93,7 +92,7 @@ func GetBlockChainInstance() (*BlockChain, error) {
 		tail: lastHash,
 	}
 
-	return &blockchain, nil
+	return &blockchain, err
 
 }
 
